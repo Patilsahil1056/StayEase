@@ -156,17 +156,17 @@ const Checkout: React.FC = () => {
     }
 
     try {
-const bookingRef = data?.id || `SE-${Math.floor(100000 + Math.random() * 900000)}`;
+      // Ensure user profile exists to satisfy foreign key user_id -> profiles(id)
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        full_name: fullName || user.email?.split('@')[0],
+        phone: phone || null,
+        role: 'guest',
+      });
 
-if (error) {
-  if (error.code === '23P01' || error.message.includes('overlapping') || error.message.includes('no_overlapping_bookings')) {
-    setErrorMessage('Sorry, this chamber is already reserved for these dates. Please choose other dates or select another chamber.');
-  } else if (error.message.includes('bookings_check') || error.message.includes('check constraint')) {
-    setErrorMessage('Check-out date must be later than check-in date. Please adjust your dates.');
-  } else {
-    setErrorMessage(error.message);
-  }
+      const paymentStatusValue = paymentMethod === 'concierge' ? 'pending' : 'paid';
 
+      // Insert reservation into Supabase bookings table
       const { data, error } = await supabase
         .from('bookings')
         .insert({
@@ -183,18 +183,16 @@ if (error) {
         .select()
         .single();
 
-      // Ensure user profile exists to satisfy foreign key user_id -> profiles(id)
-      await supabase.from('profiles').upsert({
-        id: user.id,
-        full_name: fullName || user.email?.split('@')[0],
-        phone: phone || null,
-        role: 'guest',
-      });
+      const bookingRef = data?.id || `SE-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      const paymentStatusValue = paymentMethod === 'concierge' ? 'pending' : 'paid';
-
-      // Insert reservation into Supabase bookings table
-
+      if (error) {
+        if (error.code === '23P01' || error.message.includes('overlapping') || error.message.includes('no_overlapping_bookings')) {
+          setErrorMessage('Sorry, this chamber is already reserved for these dates. Please choose other dates or select another chamber.');
+        } else if (error.message.includes('bookings_check') || error.message.includes('check constraint')) {
+          setErrorMessage('Check-out date must be later than check-in date. Please adjust your dates.');
+        } else {
+          setErrorMessage(error.message);
+        }
       } else {
         const query = new URLSearchParams({
           room: room?.title || 'The Victoria Heritage Chamber',
