@@ -122,7 +122,7 @@ const RoomDetails: React.FC = () => {
           </div>
 
           <div className="space-y-4 pt-4 border-t border-[#B8924A]/30">
-            <h3 className="font-serif text-2xl text-[#1C1410]">Chamber Appointments</h3>
+            <h3 className="font-serif text-2xl text-[#1C1410]">Chamber Appointments & Amenities</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs text-[#1C1410]">
               <div className="flex items-center space-x-2.5 p-3 rounded bg-[#EADFC8] border border-[#B8924A]/20">
                 <Wifi className="w-4 h-4 text-[#B8924A]" />
@@ -138,15 +138,23 @@ const RoomDetails: React.FC = () => {
               </div>
               <div className="flex items-center space-x-2.5 p-3 rounded bg-[#EADFC8] border border-[#B8924A]/20">
                 <Sparkles className="w-4 h-4 text-[#B8924A]" />
-                <span>24/7 Concierge Service</span>
+                <span>24/7 Dedicated Concierge</span>
               </div>
               <div className="flex items-center space-x-2.5 p-3 rounded bg-[#EADFC8] border border-[#B8924A]/20">
                 <BedDouble className="w-4 h-4 text-[#B8924A]" />
-                <span>Fine Egyptian Linens</span>
+                <span>Fine Egyptian Linens & Pillow Menu</span>
               </div>
               <div className="flex items-center space-x-2.5 p-3 rounded bg-[#EADFC8] border border-[#B8924A]/20">
                 <Shield className="w-4 h-4 text-[#B8924A]" />
-                <span>In-Room Safe & Bar</span>
+                <span>In-Chamber Private Safe & Gourmet Bar</span>
+              </div>
+            </div>
+            
+            {/* Highlights banner */}
+            <div className="p-4 rounded bg-[#0F2A24]/10 border border-[#0F2A24]/20 flex items-center justify-between text-xs text-[#0F2A24]">
+              <div className="flex items-center space-x-2 font-medium">
+                <Sparkles className="w-4 h-4 text-[#B8924A]" />
+                <span>Heritage Guarantee: Complimentary high tea & evening chamber turndown service included.</span>
               </div>
             </div>
           </div>

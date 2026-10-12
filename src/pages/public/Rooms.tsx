@@ -18,7 +18,13 @@ const SAMPLE_ROOMS: Room[] = [
     images: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80'],
     is_active: true,
     created_at: new Date().toISOString(),
-    room_type: { id: '1', name: 'Deluxe Heritage Room', description: '' }
+    room_type: { id: '1', name: 'Deluxe Heritage Room', description: '' },
+    amenities: [
+      { id: '1', name: 'Wi-Fi 6', icon: 'Wifi' },
+      { id: '2', name: 'Soaking Tub', icon: 'Bath' },
+      { id: '3', name: 'Courtyard View', icon: 'Eye' },
+      { id: '4', name: 'French Press', icon: 'Coffee' }
+    ]
   },
   {
     id: 'e2222222-2222-2222-2222-222222222222',
@@ -33,7 +39,13 @@ const SAMPLE_ROOMS: Room[] = [
     images: ['https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80'],
     is_active: true,
     created_at: new Date().toISOString(),
-    room_type: { id: '2', name: 'Executive Palace Suite', description: '' }
+    room_type: { id: '2', name: 'Executive Palace Suite', description: '' },
+    amenities: [
+      { id: '5', name: 'Butler Service', icon: 'Sparkles' },
+      { id: '6', name: 'Private Veranda', icon: 'Sun' },
+      { id: '1', name: 'Wi-Fi 6', icon: 'Wifi' },
+      { id: '2', name: 'Marble Tub', icon: 'Bath' }
+    ]
   },
   {
     id: 'e3333333-3333-3333-3333-333333333333',
@@ -48,7 +60,13 @@ const SAMPLE_ROOMS: Room[] = [
     images: ['https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1200&q=80'],
     is_active: true,
     created_at: new Date().toISOString(),
-    room_type: { id: '3', name: 'Royal Presidential Suite', description: '' }
+    room_type: { id: '3', name: 'Royal Presidential Suite', description: '' },
+    amenities: [
+      { id: '7', name: 'Panoramic Terrace', icon: 'Eye' },
+      { id: '5', name: 'Private Butler', icon: 'Sparkles' },
+      { id: '8', name: 'Private Jacuzzi', icon: 'Bath' },
+      { id: '9', name: 'Artisan Breakfast', icon: 'Utensils' }
+    ]
   },
   {
     id: 'e4444444-4444-4444-4444-444444444444',
@@ -63,7 +81,13 @@ const SAMPLE_ROOMS: Room[] = [
     images: ['https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80'],
     is_active: true,
     created_at: new Date().toISOString(),
-    room_type: { id: '4', name: 'Courtyard Classic', description: '' }
+    room_type: { id: '4', name: 'Courtyard Classic', description: '' },
+    amenities: [
+      { id: '1', name: 'Wi-Fi 6', icon: 'Wifi' },
+      { id: '10', name: 'Garden Access', icon: 'Trees' },
+      { id: '4', name: 'French Press', icon: 'Coffee' },
+      { id: '11', name: 'Climate Control', icon: 'Wind' }
+    ]
   }
 ];
 
@@ -72,10 +96,20 @@ const Rooms: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>(SAMPLE_ROOMS);
   const [loading, setLoading] = useState<boolean>(false);
   const [maxPrice, setMaxPrice] = useState<number>(30000);
+  const [selectedAmenity, setSelectedAmenity] = useState<string>('all');
 
   const checkIn = searchParams.get('checkIn') || '';
   const checkOut = searchParams.get('checkOut') || '';
   const guests = searchParams.get('guests') || '1';
+
+  const ALL_AMENITY_FILTERS = [
+    { label: 'All Amenities', value: 'all' },
+    { label: 'Butler Service', value: 'Butler' },
+    { label: 'Soaking Tub / Jacuzzi', value: 'Tub' },
+    { label: 'Terrace & View', value: 'View' },
+    { label: 'Wi-Fi 6', value: 'Wi-Fi' },
+    { label: 'French Press & Teas', value: 'French' }
+  ];
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -95,7 +129,7 @@ const Rooms: React.FC = () => {
         } else {
           const { data, error } = await supabase
             .from('rooms')
-            .select('*, room_type:room_types(*)')
+            .select('*, room_type:room_types(*), amenities(*)')
             .eq('is_active', true);
           if (!error && data && data.length > 0) {
             setRooms(data);
@@ -114,7 +148,12 @@ const Rooms: React.FC = () => {
   }, [checkIn, checkOut, guests]);
 
   const filteredRooms = rooms.filter((room) => {
-    return room.price_per_night <= maxPrice;
+    const matchesPrice = room.price_per_night <= maxPrice;
+    if (!matchesPrice) return false;
+
+    if (selectedAmenity === 'all') return true;
+    const roomAmenities = room.amenities?.map((a) => a.name.toLowerCase()).join(' ') || '';
+    return roomAmenities.includes(selectedAmenity.toLowerCase());
   });
 
   return (
@@ -147,6 +186,25 @@ const Rooms: React.FC = () => {
         </div>
       </div>
 
+      {/* Amenity Filter Bar */}
+      <div className="flex flex-wrap items-center gap-2 pt-1 pb-2">
+        <span className="text-xs uppercase tracking-wider text-[#1C1410]/70 font-medium mr-2">Filter By Feature:</span>
+        {ALL_AMENITY_FILTERS.map((pill) => (
+          <button
+            key={pill.value}
+            type="button"
+            onClick={() => setSelectedAmenity(pill.value)}
+            className={`text-xs px-3.5 py-1.5 rounded-[3px] border transition ${
+              selectedAmenity === pill.value
+                ? 'bg-[#5B1A1F] text-[#F6EFE2] border-[#5B1A1F] shadow-sm font-semibold'
+                : 'bg-[#EADFC8] text-[#1C1410]/80 border-[#B8924A]/30 hover:border-[#5B1A1F]'
+            }`}
+          >
+            {pill.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="py-20 text-center">
           <div className="animate-spin w-8 h-8 border-2 border-[#B8924A] border-t-transparent rounded-full mx-auto" />
@@ -156,7 +214,7 @@ const Rooms: React.FC = () => {
         <div className="py-20 text-center glass-ivory p-8 border border-[#B8924A]/30 rounded">
           <h3 className="font-serif text-2xl text-[#1C1410]">No Chambers Available</h3>
           <p className="text-sm text-[#1C1410]/70 mt-2">
-            Try adjusting your budget or selecting alternate dates.
+            Try adjusting your budget or selecting alternate amenity filters.
           </p>
         </div>
       ) : (
@@ -181,9 +239,23 @@ const Rooms: React.FC = () => {
                     <span className="text-xs text-[#1C1410]/60">{room.capacity} Guests · {room.beds} Bed</span>
                   </div>
                   <h3 className="font-serif text-2xl text-[#1C1410] mt-1">{room.title}</h3>
-                  <p className="text-xs text-[#1C1410]/70 mt-2 line-clamp-3 leading-relaxed">
+                  <p className="text-xs text-[#1C1410]/70 mt-2 line-clamp-2 leading-relaxed">
                     {room.description}
                   </p>
+
+                  {/* Amenities Badges */}
+                  {room.amenities && room.amenities.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-[#B8924A]/20">
+                      {room.amenities.map((amenity) => (
+                        <span
+                          key={amenity.id}
+                          className="text-[10px] uppercase tracking-wider bg-[#F6EFE2] text-[#5B1A1F] border border-[#B8924A]/30 px-2 py-0.5 rounded-[2px]"
+                        >
+                          {amenity.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
